@@ -1,28 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f212ba62-703c-4878-87e3-5f5dad8c3038" name="Default Changelist" comment="">
+    <list default="true" id="ac27847e-a96f-42b6-b0ff-d4238f1fbb6c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/AcpiHelper.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/KotlinJavaRuntime.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/KotlinJavaRuntime.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/DsdtPatcher.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/DsdtPatcher.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Kotlin Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectId" id="1hBqxEXMm7e1HTAB6q6kC4zfcuT" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectId" id="1hmtImVihmDc125iIQrS9mqNsf6" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -32,9 +27,9 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="project.structure.last.edited" value="Project" />
-    <property name="project.structure.proportion" value="0.21875" />
-    <property name="project.structure.side.proportion" value="0.16508938" />
+    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.0" />
   </component>
   <component name="RunManager">
     <configuration name="MainKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
@@ -61,17 +56,12 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="f212ba62-703c-4878-87e3-5f5dad8c3038" name="Default Changelist" comment="" />
-      <created>1599495077313</created>
+      <changelist id="ac27847e-a96f-42b6-b0ff-d4238f1fbb6c" name="Default Changelist" comment="" />
+      <created>1600628017575</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1599495077313</updated>
-      <workItem from="1599495079253" duration="3483000" />
-      <workItem from="1600529847911" duration="9497000" />
-      <workItem from="1600540317056" duration="505000" />
-      <workItem from="1600556038185" duration="1048000" />
-      <workItem from="1600596297901" duration="914000" />
-      <workItem from="1600608764661" duration="10377000" />
+      <updated>1600628017575</updated>
+      <workItem from="1600628023290" duration="123000" />
     </task>
     <servers />
   </component>
@@ -79,45 +69,17 @@
     <option name="version" value="2" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="646" y="135" key="#MainKt" timestamp="1600540213626">
+    <state x="424" y="194" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1600628056774">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
-    <state x="646" y="135" key="#MainKt/0.23.1920.1018@0.23.1920.1018" timestamp="1600540213626" />
-    <state x="448" y="113" key="#Project_Structure" timestamp="1600540332971">
+    <state x="424" y="194" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1920.1018@0.23.1920.1018" timestamp="1600628056774" />
+    <state x="697" y="329" key="#com.intellij.ide.util.TreeClassChooserDialog" timestamp="1600628150243">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
-    <state x="448" y="113" key="#Project_Structure/0.23.1920.1018@0.23.1920.1018" timestamp="1600540332971" />
-    <state x="849" y="194" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1599495219691">
+    <state x="697" y="329" key="#com.intellij.ide.util.TreeClassChooserDialog/0.23.1920.1018@0.23.1920.1018" timestamp="1600628150243" />
+    <state x="448" y="113" key="SettingsEditor" timestamp="1600628156036">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
-    <state x="849" y="194" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1920.1018@0.23.1920.1018" timestamp="1599495219691" />
-    <state width="1878" height="345" key="GridCell.Tab.0.bottom" timestamp="1600626136423">
-      <screen x="0" y="23" width="1920" height="1018" />
-    </state>
-    <state width="1878" height="345" key="GridCell.Tab.0.bottom/0.23.1920.1018@0.23.1920.1018" timestamp="1600626136423" />
-    <state width="1878" height="345" key="GridCell.Tab.0.center" timestamp="1600626136422">
-      <screen x="0" y="23" width="1920" height="1018" />
-    </state>
-    <state width="1878" height="345" key="GridCell.Tab.0.center/0.23.1920.1018@0.23.1920.1018" timestamp="1600626136422" />
-    <state width="1878" height="345" key="GridCell.Tab.0.left" timestamp="1600626136422">
-      <screen x="0" y="23" width="1920" height="1018" />
-    </state>
-    <state width="1878" height="345" key="GridCell.Tab.0.left/0.23.1920.1018@0.23.1920.1018" timestamp="1600626136422" />
-    <state width="1878" height="345" key="GridCell.Tab.0.right" timestamp="1600626136423">
-      <screen x="0" y="23" width="1920" height="1018" />
-    </state>
-    <state width="1878" height="345" key="GridCell.Tab.0.right/0.23.1920.1018@0.23.1920.1018" timestamp="1600626136423" />
-    <state x="448" y="113" key="SettingsEditor" timestamp="1600540357392">
-      <screen x="0" y="23" width="1920" height="1018" />
-    </state>
-    <state x="448" y="113" key="SettingsEditor/0.23.1920.1018@0.23.1920.1018" timestamp="1600540357392" />
-    <state x="625" y="246" key="run.anything.popup" timestamp="1600624205592">
-      <screen x="0" y="23" width="1920" height="1018" />
-    </state>
-    <state x="625" y="246" key="run.anything.popup/0.23.1920.1018@0.23.1920.1018" timestamp="1600624205592" />
-    <state x="1105" y="248" width="670" height="676" key="search.everywhere.popup" timestamp="1600616313046">
-      <screen x="0" y="23" width="1920" height="1018" />
-    </state>
-    <state x="1105" y="248" width="670" height="676" key="search.everywhere.popup/0.23.1920.1018@0.23.1920.1018" timestamp="1600616313046" />
+    <state x="448" y="113" key="SettingsEditor/0.23.1920.1018@0.23.1920.1018" timestamp="1600628156036" />
   </component>
 </project>

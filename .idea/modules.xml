@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/AcpiHelper.iml" filepath="$PROJECT_DIR$/.idea/AcpiHelper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AcpiHelper.iml" filepath="$PROJECT_DIR$/AcpiHelper.iml" />
     </modules>
   </component>
 </project>
