@@ -1,6 +1,7 @@
 package me.blvckbytes.acpihelper.patcher
 
 import java.io.File
+import java.security.spec.ECField
 
 class DsdtPatcher(
         filePath: String
@@ -13,8 +14,14 @@ class DsdtPatcher(
 
         val ecMemLines = findEcMemLines()
         val targetFields = findTargetFields(ecMemLines)
-        targetFields.forEach {
-            println(it)
+        val splittedFields = splitFields(targetFields)
+
+        splittedFields.forEach {
+            println("${it.key}:")
+            it.value?.forEach { splitField ->
+                println("> $splitField")
+            }
+            println("end of field\n")
         }
     }
 
@@ -101,6 +108,59 @@ class DsdtPatcher(
             }
         }
 
+        // Now, sort the target fields by their offset, since they don't necessarily need to be
+        fieldLines.sortBy { it.offset }
         return fieldLines
+    }
+
+    private fun splitFields(targetFields: List<EcField>): Map<EcField, List<EcField>?> {
+        val splitMap = mutableMapOf<EcField, MutableList<EcField>?>()
+
+        for(targetField in targetFields) {
+
+            // Just split either 2- or 4 byte fields, for later use with either B1B2 or B1B4
+            // Ignore other values, they will be taken care of later
+            val byteSize = targetField.size / 8
+            if(byteSize != 2 && byteSize != 4) {
+                splitMap[targetField] = null
+                continue
+            }
+
+            // Generate subnames until the name list is full - and thus all names were successful
+            var charPointer = 0
+            val parName = targetField.name
+            val subNames = mutableListOf<String>()
+            while(subNames.size != byteSize && charPointer < parName.length) {
+                for (i in 0 until byteSize) {
+                    val subName = parName.substring(0, charPointer) + i.toString() + parName.substring(charPointer + 1)
+
+                    if(
+                        // Check if the child field name is contained in any of the file lines
+                        fileLines.any { it.contains(subName, ignoreCase = true) } ||
+
+                        // Check if the child field name has already been created for any other field
+                        splitMap.values.any { it == null || it.any { name -> name.name.equals(subName, ignoreCase = true) } } ||
+
+                        // Check if this subname collection already has this name
+                        subNames.contains(subName)
+                    ) {
+                        subNames.clear()
+                        charPointer++
+                        break
+                    }
+
+                    subNames.add(subName)
+                }
+            }
+
+            // Now create the remaining entries with the same charPointer index
+            splitMap[targetField] = mutableListOf()
+            for((c, subName) in subNames.withIndex()) {
+                // Create the new name, and set the fields offset to + c, since one field is one byte in size
+                splitMap[targetField]?.add(EcField(targetField.offset + c, subName, 8))
+            }
+        }
+
+        return splitMap
     }
 }
