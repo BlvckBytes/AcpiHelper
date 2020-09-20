@@ -12,6 +12,12 @@ I think that patching the battery for a hackintosh is a tedious and automatable 
 * Find new names to rename the old methods with, non-colliding
 * Then automatically create the OC-byte-replaces from the compiled DSDT and the informations gained above
 
+## Usage
+You just need to invoke it from the terminal with the first argument being the location of your DSDT.dsl. It needs to be disassembled and **untouched**!
+```
+java -jar AcpiHelper.jar <YourPath>
+```
+
 # Status
 What has been done until now?
 
