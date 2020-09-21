@@ -12,7 +12,6 @@ fun main(args: Array<String>) {
     // Invoke the patcher with either the hardcoded path for me debugging it, or arg0 of command line invocation
     DsdtPatcher(args.getOrNull(0) ?: "/Users/blvckbytes/Desktop/test1/DSDT.dsl")
 
-    // Print goodbye screen
-    println()
+    // Print goodbye message :)
     println("Goodbye!")
 }

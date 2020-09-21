@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="AcpiHelper:jar" />
+    </artifacts-to-build>
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="ac27847e-a96f-42b6-b0ff-d4238f1fbb6c" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/AcpiHelper.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/KotlinJavaRuntime.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/KotlinJavaRuntime.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/DsdtPatcher.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/DsdtPatcher.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/EcField.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/EcField.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +29,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="project.structure.last.edited" value="Artifacts" />
@@ -61,7 +66,10 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1600628017575</updated>
-      <workItem from="1600628023290" duration="123000" />
+      <workItem from="1600628023290" duration="778000" />
+      <workItem from="1600665962303" duration="1020000" />
+      <workItem from="1600703391393" duration="1373000" />
+      <workItem from="1600704814391" duration="412000" />
     </task>
     <servers />
   </component>
@@ -77,9 +85,33 @@
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
     <state x="697" y="329" key="#com.intellij.ide.util.TreeClassChooserDialog/0.23.1920.1018@0.23.1920.1018" timestamp="1600628150243" />
+    <state x="648" y="275" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1600704698652">
+      <screen x="0" y="23" width="1920" height="1018" />
+    </state>
+    <state x="648" y="275" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.23.1920.1018@0.23.1920.1018" timestamp="1600704698652" />
+    <state width="1878" height="355" key="GridCell.Tab.0.bottom" timestamp="1600705214218">
+      <screen x="0" y="23" width="1920" height="1018" />
+    </state>
+    <state width="1878" height="355" key="GridCell.Tab.0.bottom/0.23.1920.1018@0.23.1920.1018" timestamp="1600705214218" />
+    <state width="1878" height="355" key="GridCell.Tab.0.center" timestamp="1600705214217">
+      <screen x="0" y="23" width="1920" height="1018" />
+    </state>
+    <state width="1878" height="355" key="GridCell.Tab.0.center/0.23.1920.1018@0.23.1920.1018" timestamp="1600705214217" />
+    <state width="1878" height="355" key="GridCell.Tab.0.left" timestamp="1600705214216">
+      <screen x="0" y="23" width="1920" height="1018" />
+    </state>
+    <state width="1878" height="355" key="GridCell.Tab.0.left/0.23.1920.1018@0.23.1920.1018" timestamp="1600705214216" />
+    <state width="1878" height="355" key="GridCell.Tab.0.right" timestamp="1600705214218">
+      <screen x="0" y="23" width="1920" height="1018" />
+    </state>
+    <state width="1878" height="355" key="GridCell.Tab.0.right/0.23.1920.1018@0.23.1920.1018" timestamp="1600705214218" />
     <state x="448" y="113" key="SettingsEditor" timestamp="1600628156036">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
     <state x="448" y="113" key="SettingsEditor/0.23.1920.1018@0.23.1920.1018" timestamp="1600628156036" />
+    <state x="625" y="248" width="670" height="676" key="search.everywhere.popup" timestamp="1600703878882">
+      <screen x="0" y="23" width="1920" height="1018" />
+    </state>
+    <state x="625" y="248" width="670" height="676" key="search.everywhere.popup/0.23.1920.1018@0.23.1920.1018" timestamp="1600703878882" />
   </component>
 </project>
