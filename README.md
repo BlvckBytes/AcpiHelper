@@ -9,7 +9,8 @@ I think that patching the battery for a hackintosh is a tedious and automatable 
 * Decide how to split them (either 2x8, 4x8 or buffered R/W)
 * Split them accordingly in the generated SSDT, find non-colliding name schemes
 * Generate the OperationRegion source code
-* Find all usages and modify them to use the newly created fields
+* Find all read usages and modify them
+* Find all write usages and modify them
 * Create those altered methods in the generated SSDT
 * Find new names to rename the old methods with, non-colliding
 * Then automatically create the OC-byte-replaces from the compiled DSDT and the informations gained above
