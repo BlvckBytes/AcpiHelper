@@ -1,7 +1,7 @@
 package me.blvckbytes.acpihelper.patcher
 
 import java.io.File
-import java.lang.StringBuilder
+import kotlin.text.StringBuilder
 
 class DsdtPatcher(
         filePath: String
@@ -26,40 +26,63 @@ class DsdtPatcher(
 
         println("Generating OperationRegion overrides...\n")
         println(fieldMapToCode(splittedFields))
+
+        // Commented out since this is still WIP, and not needed in the current release
+
+        /*println("Finding all affected methods...\n")
+        val targetMethods = findTargetMethods(splittedFields)
+        targetMethods.forEach {
+            println(it)
+        }*/
     }
 
-    private fun findEcMemLines(): List<Int> {
-        val ecMemLines = mutableListOf<Int>()
+    private fun findEcMemLines(): Map<Int, Int> {
+        val ecMemLines = mutableMapOf<Int, Int>()
 
-        // Iterate all lines and add the line index to the list, if it matches the simple
-        // rule for an operation region, which just means it contains both words seen below
+        // Iterate all lines and find the ones that match the simple rule for an operation
+        // region, which just means it contains both keywords seen below
         for(i in fileLines.indices) {
             val line = fileLines[i]
+
+            // Find OperationRegion definitions for the EmbeddedControl's memory
             if(!(line.contains("OperationRegion") && line.contains("EmbeddedControl")))
                 continue
-            ecMemLines.add(i)
+
+            // Get the region information by splitting on the parameter-delimiter ","
+            // Also get it's name, to search for multiple field declarations for one region, which can be the case
+            val regionInformation = line.split(",")
+            val regionName = regionInformation[0].substring(regionInformation[0].indexOf("(") + 1)
+
+            // Convert the region offset to an integer. It may be Zero, One, or a hex-number.
+            // Parse the starting offset of the OperationRegion, because it doesn't always start at 0x0,
+            // and the first entry doesn't need to be an Offset too, so the tool relies on this information
+            val regionOffset = when (val regionStart = regionInformation[2].trim()) {
+                "Zero" -> 0
+                "One" -> 1
+                else -> regionStart.substring(2, regionStart.length).toInt(16)
+            }
+
+            // Only iterate the lines containing the region name, and remove the OR-definition
+            // Then, for each field-block, create a new ec mem line entry for further processing
+            // But first, the indexes need to be mapped to the lines, since all field definition lines will (mostly)
+            // look the same, and thus would loose the line number information. By mapping them to their indexes, a
+            // filter will still keep the right line numbers, and they can be used later on
+            fileLines.mapIndexed { index, s -> index to s }.filter { it.second.contains(regionName) && fileLines.indexOf(it.second) != i }.forEach {
+                // This definition-line will be assigned to it's offset, which the parent OR dictates
+                ecMemLines[it.first] = regionOffset
+            }
         }
 
         return ecMemLines
     }
 
-    private fun findTargetFields(ecMemLines: List<Int>): List<EcField> {
+    private fun findTargetFields(ecFieldLines: Map<Int, Int>): List<EcField> {
         val fieldLines = mutableListOf<EcField>()
 
         // Iterate all embedded control memory declaration lines. There is only one EC, from 0x0 to 0xFF. For some
         // reason those declarations may be split apart, but the fields can be collected to one list, as they will later
         // be overridden all at once too.
-        for(lineIndex in ecMemLines) {
-
-            // Parse the starting offset of the OperationRegion, because it doesn't always start at 0x0,
-            // and the first entry doesn't need to be an Offset too, so the tool relies on this information
-
-            // Convert the region offset to an integer. It may be Zero, One, or a hex-number.
-            val regionStartInt = when (val regionStart = fileLines[lineIndex].split(",")[2].trim()) {
-                "Zero" -> 0
-                "One" -> 1
-                else -> regionStart.substring(2, regionStart.length).toInt(16)
-            }
+        for(fieldEntry in ecFieldLines.entries) {
 
             /*
                 linePointer: Points to the current line of the file, is the OperationRegion line + 3
@@ -71,8 +94,10 @@ class DsdtPatcher(
                 bitOffsetBuf: Buffer for field sizes that are not a multiple of 8, so they get accumulated
                 here until big enough to add. Stuff like: 4, 2, 1, 1 would be a byte spread over 4 fields.
              */
-            var linePointer = lineIndex + 3
-            var currOffset = regionStartInt
+            // Initial value will be the offset of the OperationRegion, passed
+            // from above by the map of lineNumber to offset
+            var currOffset = fieldEntry.value
+            var linePointer = fieldEntry.key + 2
             var bitOffsetBuf = 0
 
             // Increment line pointer until end of declaration block
@@ -99,7 +124,7 @@ class DsdtPatcher(
                     // Only add fields bigger than 8 bits to the tracker list
                     // Also, check if this field is used anywhere, if not, don't track it
                     if(bitSize > 8 && fileLines.count { it.contains(currData[0]) } > 1)
-                        fieldLines.add(EcField(currOffset, currData[0], bitSize))
+                        fieldLines.add(EcField(currOffset, currData[0], bitSize, linePointer))
 
                     // Add multiples of 8 to the byte offset, hold the bits in a separate buffer for later
                     if(bitSize % 8 != 0)
@@ -112,6 +137,7 @@ class DsdtPatcher(
             }
         }
 
+        // Sort the fields by their offset, ascending
         fieldLines.sortBy { it.offset }
         return fieldLines
     }
@@ -147,11 +173,14 @@ class DsdtPatcher(
                         // Check if this subname collection already has this name
                         subNames.contains(subName)
                     ) {
+                        // Failed attempt, get rid of the generated names and start fresh, go
+                        // to the next char for index trials and break this current loop
                         subNames.clear()
                         charPointer++
                         break
                     }
 
+                    // So far, so good, add the name to the list, it's unique
                     subNames.add(subName)
                 }
             }
@@ -160,7 +189,7 @@ class DsdtPatcher(
             splitMap[targetField] = mutableListOf()
             for ((c, subName) in subNames.withIndex()) {
                 // Create the new name, and set the fields offset to + c, since one field is one byte in size
-                splitMap[targetField]?.add(EcField(targetField.offset + c, subName, 8))
+                splitMap[targetField]?.add(EcField(targetField.offset + c, subName, 8, null))
             }
         }
 
@@ -170,29 +199,29 @@ class DsdtPatcher(
     private fun fieldMapToCode(fieldMap: Map<EcField, List<EcField>?>): String {
         val sb = StringBuilder()
 
+        // Null lists not going to be handled in an ECOR override (>32, thus buffered R/W)
+        val targetFields = fieldMap.filterKeys { fieldMap[it] != null }
+
         // Create the embedded control override region with it's field block
         sb.appendLine("OperationRegion (ECOR, EmbeddedControl, Zero, 0xFF)")
         sb.appendLine("Field (ECOR, ByteAcc, NoLock, Preserve)")
         sb.appendLine("{")
 
         // Print initial offset, if it exists and it's not at 0x0
-        if(fieldMap.keys.isNotEmpty() && fieldMap.keys.first().offset != 0)
-            sb.appendLine("Offset (${fieldMap.keys.first().hexOffset()}),")
+        if(targetFields.keys.isNotEmpty() && targetFields.keys.first().offset != 0)
+            sb.appendLine("Offset (${targetFields.keys.first().hexOffset()}),")
 
-        var lastOffset = fieldMap.keys.firstOrNull()?.offset ?: 0
-        for(targ in fieldMap.keys) {
+        var lastOffset = targetFields.keys.firstOrNull()?.offset ?: 0
+        for(targ in targetFields.keys) {
 
             // If the offset to the last printed field is greater than a byte (which will be the unit of
-            // all override fields), append an offset instrcution
+            // all override fields), append an offset instruction
             val deltaOffset = targ.offset - lastOffset
             if(deltaOffset > 1)
                 sb.appendLine("Offset (${targ.hexOffset()}),")
 
-            // Null lists not going to be handled in an ECOR override
-            val fields = fieldMap[targ] ?: continue
-
             // Print field and set last offset to that sub-field's offset
-            fields.forEach {
+            fieldMap[targ]?.forEach {
                 sb.appendLine("${it.name}, ${it.size},")
                 lastOffset = it.offset
             }
@@ -201,5 +230,74 @@ class DsdtPatcher(
         // Terminate declaration block
         sb.appendLine("}")
         return sb.toString()
+    }
+
+    private fun findTargetMethods(splittedFields: Map<EcField, List<EcField>?>): List<AslMethod> {
+        val methodList = mutableListOf<AslMethod>()
+
+        splittedFields.keys.forEach { field ->
+
+            // Find all lines, where this field occurs, except the definition itself
+            val occurrences = fileLines
+                    // Only usages of this field
+                    .filter { it.contains(field.name) }
+                    // Map to line numbers
+                    .map { fileLines.indexOf(it) }
+                    // Filter out the field definition
+                    .filter { it != field.lineOfDefinition }
+
+            // For each occurrence, build the enclosing method
+            occurrences.forEach {
+                val methodBody = StringBuilder()
+                var linePointer = it
+
+                // Go up to the nearest method signature, where this method will begin
+                while(!fileLines[linePointer].contains("Method"))
+                    linePointer--
+
+                // Cache the beginning line number, also add the signature to body buffer
+                // Calculate it's indentation-level, which will be useful when calculating the scope later on
+                // Indentation is just how many leading whitespace characters there are
+                val methodBegin = linePointer
+                val methodSig = fileLines[linePointer]
+                val methodIndent = methodSig.length - methodSig.trimStart().length
+                methodBody.appendLine(methodSig)
+
+                // Shift the line pointer by one, so it's at the body block begin ({), also append to body buffer
+                linePointer++
+                methodBody.appendLine(fileLines[linePointer])
+
+                // Starting out with one open bracket, the method body begin
+                // To find the end of this method, there needs to be a balance between opening and closing
+                // brackets, opening = closing. This will be the case, when openBrackets is zero. So, loop until zero.
+                var openBrackets = 1
+                while(openBrackets > 0) {
+                    linePointer++
+
+                    // Line contains opening bracket
+                    if(fileLines[linePointer].contains("{"))
+                        openBrackets++
+
+                    // Line contains closing bracket
+                    if(fileLines[linePointer].contains("}"))
+                        openBrackets--
+
+                    // Append current line to body buffer
+                    methodBody.appendLine(fileLines[linePointer])
+                }
+
+                methodList.add(AslMethod(
+                        methodBegin,
+                        linePointer, // Line number of method end will be at current line pointer value
+                        methodIndent,
+                        "UNKNOWN", // Ugh, right, I still need to calculate this...
+                        methodBody.toString().trimEnd(), // Always trim the end of the method body
+                        splittedFields.filter { entry -> entry.key == field } // Only the entry for the current field
+                ))
+            }
+        }
+
+        // TODO: Collect methods with same properties (body, begin, end, indent) together and accumulate their used-fields list
+        return methodList
     }
 }
