@@ -7,6 +7,8 @@ class DsdtPatcher(
         filePath: String
 ) {
 
+    // TODO: Check if other occurrances are real usages, or definitions in another region, or name, or...
+
     private var fileLines: MutableList<String> = mutableListOf()
 
     init {
@@ -27,13 +29,11 @@ class DsdtPatcher(
         println("Generating OperationRegion overrides...\n")
         println(fieldMapToCode(splittedFields))
 
-        // Commented out since this is still WIP, and not needed in the current release
-
-        /*println("Finding all affected methods...\n")
+        println("Finding all affected methods...\n")
         val targetMethods = findTargetMethods(splittedFields)
         targetMethods.forEach {
             println(it)
-        }*/
+        }
     }
 
     private fun findEcMemLines(): Map<Int, Int> {
@@ -221,9 +221,10 @@ class DsdtPatcher(
                 sb.appendLine("Offset (${targ.hexOffset()}),")
 
             // Print field and set last offset to that sub-field's offset
-            fieldMap[targ]?.forEach {
-                sb.appendLine("${it.name}, ${it.size},")
-                lastOffset = it.offset
+            fieldMap[targ]?.forEachIndexed { index, ecField ->
+                val trailingComma = if(index + 1 == fieldMap[targ]?.size) "" else ","
+                sb.appendLine("${ecField.name}, ${ecField.size}$trailingComma")
+                lastOffset = ecField.offset
             }
         }
 
@@ -247,7 +248,7 @@ class DsdtPatcher(
                     .filter { it != field.lineOfDefinition }
 
             // For each occurrence, build the enclosing method
-            occurrences.forEach {
+            occurrences.forEach { it ->
                 val methodBody = StringBuilder()
                 var linePointer = it
 
@@ -286,18 +287,69 @@ class DsdtPatcher(
                     methodBody.appendLine(fileLines[linePointer])
                 }
 
-                methodList.add(AslMethod(
-                        methodBegin,
-                        linePointer, // Line number of method end will be at current line pointer value
-                        methodIndent,
-                        "UNKNOWN", // Ugh, right, I still need to calculate this...
-                        methodBody.toString().trimEnd(), // Always trim the end of the method body
-                        splittedFields.filter { entry -> entry.key == field } // Only the entry for the current field
-                ))
+                // Parse the method name from it's signature
+                val methodName = fileLines[methodBegin].split(",")[0].substring(fileLines[methodBegin].indexOf("(") + 1)
+
+                // Check if there has already been a method encountered with the same start- and endline
+                val existingMethod = methodList.firstOrNull { aslm -> aslm.startLine == methodBegin && aslm.endLine == linePointer }
+                if(existingMethod != null) {
+                    // Just add to the affected fields to this method's map
+                    existingMethod.affectedFields.putAll(splittedFields.filter { entry -> entry.key == field })
+                }
+
+                // This method has not been found yet, thus create a new one
+                else {
+                    methodList.add(AslMethod(
+                            methodBegin,
+                            linePointer, // Line number of method end will be at current line pointer value
+                            methodIndent,
+                            methodName,
+                            calculateMethodScope(methodBegin, methodIndent),
+                            methodBody.toString().trimEnd(), // Always trim the end of the method body
+                            // Only the entry for the current field, filter out all other fields
+                            splittedFields.filter { entry -> entry.key == field }.toMutableMap()
+                    ))
+                }
             }
         }
 
-        // TODO: Collect methods with same properties (body, begin, end, indent) together and accumulate their used-fields list
         return methodList
+    }
+
+    private fun calculateMethodScope(methodBegin: Int, methodIndent: Int): String {
+
+        val scopeEntries = mutableListOf<String>()
+        var currentIndent = methodIndent
+        var linePointer = methodBegin
+
+        // Search and build until the current indent is 4, since that's where the top level scope instructions begin
+        while(currentIndent != 4) {
+            linePointer--
+
+            // Searching for scope or device instructions, which dictate the total absolute scope together
+            var line = fileLines[linePointer]
+            if(!(line.trim().startsWith("Scope") || line.trim().startsWith("Device")))
+                continue
+
+            // Calculate the indent difference, relative to the current indent
+            val lineIndent = line.length - line.trimStart().length
+            val indentDelta = currentIndent - lineIndent
+
+            // Containing scope needs to be less indented than the current indent level
+            if(indentDelta <= 0)
+                continue
+
+            // The current indent will be the indent of the new scope instruction, since
+            // it could be offset by a multiple of 4, if there are other indentations between
+            currentIndent = line.length - line.trimStart().length
+
+            // Append the (partial) scope to the scope entry list
+            line = line.trim()
+            scopeEntries.add(line.substring(line.indexOf("(") + 1, line.length - 1))
+        }
+
+        // Reverse the entries, since they get built up from the inside out, then join them with a dot
+        scopeEntries.reverse()
+        return scopeEntries.joinToString(".")
     }
 }
