@@ -30,3 +30,4 @@ What has been done until now?
 - [x] Decide how to split them (2x8 and 4x8 get split into OR-overrides, other fields will have null as their mapping and thus are marked for buffered R/W)
 - [x] Split accordingly and find non-colliding name schemes (note: the tool gives it's best to still keep the fields readable, but don't forget, it's automated)
 - [x] Generate the OR source code
+- [x] Find all methods that contain code that needs work and track them
