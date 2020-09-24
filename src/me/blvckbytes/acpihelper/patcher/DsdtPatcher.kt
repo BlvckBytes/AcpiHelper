@@ -7,8 +7,6 @@ class DsdtPatcher(
         filePath: String
 ) {
 
-    // TODO: Check if other occurrances are real usages, or definitions in another region, or name, or...
-
     private var fileLines: MutableList<String> = mutableListOf()
 
     init {
@@ -121,9 +119,32 @@ class DsdtPatcher(
                 else if(currData.size >= 2 && currData[1].toIntOrNull() != null) {
                     val bitSize = currData[1].toInt()
 
+                    // This field is not of interest, quit here for this iteration and stop all other checks
+                    if(bitSize <= 8) {
+                        linePointer++
+                        continue
+                    }
+
+                    // Iterate through all lines with their index where this field occurs
+                    var fieldUsages = 0
+                    for(line in fileLines.mapIndexed { index, line -> line to index }.toMap().filter { it.key.contains(currData[0]) }) {
+                        val lineIndex = line.value
+
+                        // Check if it's inside of a string, ignore that
+                        if(isInsideOfString(lineIndex, currData[0]))
+                            continue
+
+                        // Check if this has the possibility to be a field declaration
+                        // Also check if it's inside an OR
+                        if(line.key.replace(" ", "").matches(Regex("[A-Z0-9]{4},[0-9]{1,5},?")) && isFieldDefinition(lineIndex))
+                            continue
+
+                        fieldUsages++
+                    }
+
                     // Only add fields bigger than 8 bits to the tracker list
-                    // Also, check if this field is used anywhere, if not, don't track it
-                    if(bitSize > 8 && fileLines.count { it.contains(currData[0]) } > 1)
+                    // Also, check if this field is used anywhere (>1, first is definition), if not, don't track it
+                    if(fieldUsages >= 1)
                         fieldLines.add(EcField(currOffset, currData[0], bitSize, linePointer))
 
                     // Add multiples of 8 to the byte offset, hold the bits in a separate buffer for later
@@ -240,17 +261,17 @@ class DsdtPatcher(
 
             // Find all lines, where this field occurs, except the definition itself
             val occurrences = fileLines
-                    // Only usages of this field
-                    .filter { it.contains(field.name) }
                     // Map to line numbers
-                    .map { fileLines.indexOf(it) }
+                    .mapIndexed { index, line -> index to line }
+                    // Only usages of this field
+                    .filter { it.second.contains(field.name) }
                     // Filter out the field definition
-                    .filter { it != field.lineOfDefinition }
+                    .filter { it.first != field.lineOfDefinition }
 
             // For each occurrence, build the enclosing method
-            occurrences.forEach { it ->
+            occurrences.forEach { (index) ->
                 val methodBody = StringBuilder()
-                var linePointer = it
+                var linePointer = index
 
                 // Go up to the nearest method signature, where this method will begin
                 while(!fileLines[linePointer].contains("Method"))
@@ -351,5 +372,71 @@ class DsdtPatcher(
         // Reverse the entries, since they get built up from the inside out, then join them with a dot
         scopeEntries.reverse()
         return scopeEntries.joinToString(".")
+    }
+
+    private fun isInsideOfString(linePointer: Int, target: String): Boolean {
+        val line = fileLines[linePointer]
+        var charPointer = line.indexOf(target)
+
+        // Skip empty lines
+        if(line.isEmpty())
+            return false
+
+        // Iterate to start of string
+        var isString = false
+        while(charPointer >= 0) {
+            if(line[charPointer] == '"') {
+                charPointer = line.indexOf(target)
+
+                // Iterate to end of string
+                while(charPointer < line.length) {
+                    if(line[charPointer] == '"') {
+
+                        // At this point, the target is enclosed in " at both sides
+                        isString = true
+                        break
+                    }
+                    charPointer++
+                }
+                break
+            }
+            charPointer--
+        }
+
+        return isString
+    }
+
+    private fun isFieldDefinition(linePointer: Int): Boolean {
+        val line = fileLines[linePointer]
+
+        // This is a direct field definition outside an OR
+        if(line.trim().startsWith("Name"))
+            return true
+
+        // Now, check if it's inside of an OR field block
+        // Let's set a timeout of 200 lines, so this doesn't run itself into the ground
+        val timeout = 200
+        var enclosingBrackets = 0
+        var currLine = linePointer
+        while(linePointer - currLine < timeout) {
+            val curr = fileLines[currLine]
+
+            // Make sure we know how the target is enclosed in brackets.
+            // It should be exactly 1 deep, and if a OR starts then, it's inside of that
+            if(curr.contains("{"))
+                enclosingBrackets++
+
+            // A block closed... This can't be within the OR
+            if(curr.contains("}"))
+                return false
+
+            // Came accross an
+            if(curr.trim().startsWith("OperationRegion") && enclosingBrackets == 1)
+                return true
+
+            currLine--
+        }
+
+        return false
     }
 }

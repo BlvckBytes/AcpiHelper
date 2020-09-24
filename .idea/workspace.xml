@@ -8,8 +8,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ac27847e-a96f-42b6-b0ff-d4238f1fbb6c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/AslMethod.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/AslMethod.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/DsdtPatcher.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/me/blvckbytes/acpihelper/patcher/DsdtPatcher.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -83,7 +81,11 @@
       <workItem from="1600762907319" duration="7392000" />
       <workItem from="1600793513685" duration="8413000" />
       <workItem from="1600839732995" duration="1046000" />
-      <workItem from="1600842468094" duration="2272000" />
+      <workItem from="1600842468094" duration="2709000" />
+      <workItem from="1600864565549" duration="612000" />
+      <workItem from="1600930030207" duration="730000" />
+      <workItem from="1600933180880" duration="4373000" />
+      <workItem from="1600950323595" duration="1298000" />
     </task>
     <servers />
   </component>
@@ -107,26 +109,30 @@
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
     <state x="100" y="123" width="760" height="818" key="DiffContextDialog/0.23.1920.1018@0.23.1920.1018" timestamp="1600844345786" />
-    <state width="1878" height="594" key="GridCell.Tab.0.bottom" timestamp="1600844730665">
+    <state width="918" height="338" key="GridCell.Tab.0.bottom" timestamp="1600951516809">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
-    <state width="1878" height="594" key="GridCell.Tab.0.bottom/0.23.1920.1018@0.23.1920.1018" timestamp="1600844730665" />
-    <state width="1878" height="594" key="GridCell.Tab.0.center" timestamp="1600844730664">
+    <state width="918" height="338" key="GridCell.Tab.0.bottom/0.23.1920.1018@0.23.1920.1018" timestamp="1600951516809" />
+    <state width="918" height="338" key="GridCell.Tab.0.center" timestamp="1600951516808">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
-    <state width="1878" height="594" key="GridCell.Tab.0.center/0.23.1920.1018@0.23.1920.1018" timestamp="1600844730664" />
-    <state width="1878" height="594" key="GridCell.Tab.0.left" timestamp="1600844730664">
+    <state width="918" height="338" key="GridCell.Tab.0.center/0.23.1920.1018@0.23.1920.1018" timestamp="1600951516808" />
+    <state width="918" height="338" key="GridCell.Tab.0.left" timestamp="1600951516808">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
-    <state width="1878" height="594" key="GridCell.Tab.0.left/0.23.1920.1018@0.23.1920.1018" timestamp="1600844730664" />
-    <state width="1878" height="594" key="GridCell.Tab.0.right" timestamp="1600844730665">
+    <state width="918" height="338" key="GridCell.Tab.0.left/0.23.1920.1018@0.23.1920.1018" timestamp="1600951516808" />
+    <state width="918" height="338" key="GridCell.Tab.0.right" timestamp="1600951516809">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
-    <state width="1878" height="594" key="GridCell.Tab.0.right/0.23.1920.1018@0.23.1920.1018" timestamp="1600844730665" />
+    <state width="918" height="338" key="GridCell.Tab.0.right/0.23.1920.1018@0.23.1920.1018" timestamp="1600951516809" />
     <state x="448" y="113" key="SettingsEditor" timestamp="1600628156036">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
     <state x="448" y="113" key="SettingsEditor/0.23.1920.1018@0.23.1920.1018" timestamp="1600628156036" />
+    <state x="748" y="453" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1600844839959">
+      <screen x="0" y="23" width="1920" height="1018" />
+    </state>
+    <state x="748" y="453" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1920.1018@0.23.1920.1018" timestamp="1600844839959" />
     <state x="625" y="246" key="run.anything.popup" timestamp="1600842619198">
       <screen x="0" y="23" width="1920" height="1018" />
     </state>
