@@ -82,6 +82,9 @@ class DsdtPatcher(
         // be overridden all at once too.
         for(fieldEntry in ecFieldLines.entries) {
 
+            val currLine = fileLines[fieldEntry.key]
+            val fieldsetScope = calculateItemScope(fieldEntry.key, currLine.length - currLine.trimStart().length)
+
             /*
                 linePointer: Points to the current line of the file, is the OperationRegion line + 3
                 for the first field or offset declaration
@@ -145,7 +148,7 @@ class DsdtPatcher(
                     // Only add fields bigger than 8 bits to the tracker list
                     // Also, check if this field is used anywhere (>1, first is definition), if not, don't track it
                     if(fieldUsages >= 1)
-                        fieldLines.add(EcField(currOffset, currData[0], bitSize, linePointer))
+                        fieldLines.add(EcField(currOffset, currData[0], fieldsetScope, bitSize, linePointer))
 
                     // Add multiples of 8 to the byte offset, hold the bits in a separate buffer for later
                     if(bitSize % 8 != 0)
@@ -210,7 +213,7 @@ class DsdtPatcher(
             splitMap[targetField] = mutableListOf()
             for ((c, subName) in subNames.withIndex()) {
                 // Create the new name, and set the fields offset to + c, since one field is one byte in size
-                splitMap[targetField]?.add(EcField(targetField.offset + c, subName, 8, null))
+                splitMap[targetField]?.add(EcField(targetField.offset + c, subName, targetField.scope, 8, null))
             }
         }
 
@@ -269,7 +272,7 @@ class DsdtPatcher(
                     .filter { it.first != field.lineOfDefinition }
 
             // For each occurrence, build the enclosing method
-            occurrences.forEach { (index) ->
+            for((index, occurrance) in occurrences) {
                 val methodBody = StringBuilder()
                 var linePointer = index
 
@@ -283,6 +286,34 @@ class DsdtPatcher(
                 val methodBegin = linePointer
                 val methodSig = fileLines[linePointer]
                 val methodIndent = methodSig.length - methodSig.trimStart().length
+                val methodScope = AslScope(calculateItemScope(methodBegin, methodIndent))
+
+                // Parse the method name from it's signature
+                val methodName = fileLines[methodBegin].split(",")[0].substring(fileLines[methodBegin].indexOf("(") + 1)
+
+                // Check if this field is a valid one to patch within the method, by checking if it's an effected EC field
+                // using it's scope. It needs to reach the EC scope, if it doesn't, scrap it, it's just a name overlap,
+                // but different scope
+                val fieldPattern = Regex("""\^*([A-Z0-9]+\.)*${field.name}""")
+                val targetFieldScope = AslScope(field.scope)
+                var affectedScopedField: AslScope? = null
+                for(match in fieldPattern.findAll(occurrance)) {
+                    val currTarg = AslScope(match.value, "${methodScope.toValue()}.$methodName")
+
+                    // This can't be a valid usage, since it could never reach the target field - the
+                    // names are just the same
+                    if(!currTarg.canReach(targetFieldScope))
+                        continue
+
+                    affectedScopedField = currTarg
+                    break
+                }
+
+                // This method is not affected by the current field
+                if(affectedScopedField == null)
+                    continue
+
+                // Append method signature to buffer
                 methodBody.appendLine(methodSig)
 
                 // Shift the line pointer by one, so it's at the body block begin ({), also append to body buffer
@@ -308,9 +339,6 @@ class DsdtPatcher(
                     methodBody.appendLine(fileLines[linePointer])
                 }
 
-                // Parse the method name from it's signature
-                val methodName = fileLines[methodBegin].split(",")[0].substring(fileLines[methodBegin].indexOf("(") + 1)
-
                 // Check if there has already been a method encountered with the same start- and endline
                 val existingMethod = methodList.firstOrNull { aslm -> aslm.startLine == methodBegin && aslm.endLine == linePointer }
                 if(existingMethod != null) {
@@ -325,7 +353,7 @@ class DsdtPatcher(
                             linePointer, // Line number of method end will be at current line pointer value
                             methodIndent,
                             methodName,
-                            calculateMethodScope(methodBegin, methodIndent),
+                            methodScope,
                             methodBody.toString().trimEnd(), // Always trim the end of the method body
                             // Only the entry for the current field, filter out all other fields
                             splittedFields.filter { entry -> entry.key == field }.toMutableMap()
@@ -337,11 +365,11 @@ class DsdtPatcher(
         return methodList
     }
 
-    private fun calculateMethodScope(methodBegin: Int, methodIndent: Int): String {
+    private fun calculateItemScope(targetLine: Int, itemIndent: Int): String {
 
         val scopeEntries = mutableListOf<String>()
-        var currentIndent = methodIndent
-        var linePointer = methodBegin
+        var currentIndent = itemIndent
+        var linePointer = targetLine
 
         // Search and build until the current indent is 4, since that's where the top level scope instructions begin
         while(currentIndent != 4) {
@@ -430,7 +458,7 @@ class DsdtPatcher(
             if(curr.contains("}"))
                 return false
 
-            // Came accross an
+            // Came accross a region definition
             if(curr.trim().startsWith("OperationRegion") && enclosingBrackets == 1)
                 return true
 
