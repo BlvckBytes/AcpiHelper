@@ -12,11 +12,21 @@ class DsdtPatcher(
     init {
         File(filePath).forEachLine { fileLines.add(it) }
 
+
+        println("Finding all EC regions...")
         val ecMemLines = findEcMemLines()
+
+        println("Finding all target fields > 8b...")
         val targetFields = findTargetFields(ecMemLines)
+
+        println("Splitting fields...")
         val splittedFields = splitFields(targetFields)
 
-        splittedFields.forEach {
+        println("Finding all affected methods...")
+        val targetMethodData = findTargetMethods(splittedFields)
+
+        println("These fields have been affected (after filtering)...")
+        targetMethodData.second.forEach {
             println("${it.key}:")
             it.value?.forEach { splitField ->
                 println("> $splitField")
@@ -24,12 +34,10 @@ class DsdtPatcher(
             println("end of field\n")
         }
 
-        println("Generating OperationRegion overrides...\n")
-        println(fieldMapToCode(splittedFields))
+        println("Generating OperationRegion overrides from field list...")
+        println(fieldMapToCode(targetMethodData.second))
 
-        println("Finding all affected methods...\n")
-        val targetMethods = findTargetMethods(splittedFields)
-        targetMethods.forEach {
+        targetMethodData.first.forEach {
             println(it)
         }
     }
@@ -122,33 +130,31 @@ class DsdtPatcher(
                 else if(currData.size >= 2 && currData[1].toIntOrNull() != null) {
                     val bitSize = currData[1].toInt()
 
-                    // This field is not of interest, quit here for this iteration and stop all other checks
-                    if(bitSize <= 8) {
-                        linePointer++
-                        continue
+                    // Only look at fields > 8b, which will be problematic
+                    if(bitSize > 8) {
+
+                        // Iterate through all lines with their index where this field occurs
+                        var fieldUsages = 0
+                        for(line in fileLines.mapIndexed { index, line -> line to index }.toMap().filter { it.key.contains(currData[0]) }) {
+                            val lineIndex = line.value
+
+                            // Check if it's inside of a string, ignore that
+                            if (isInsideOfString(lineIndex, currData[0]))
+                                continue
+
+                            // Check if this has the possibility to be a field declaration
+                            // Also check if it's inside an OR
+                            if (line.key.replace(" ", "").matches(Regex("[A-Z0-9]{4},[0-9]{1,5},?")) && isFieldDefinition(lineIndex))
+                                continue
+
+                            fieldUsages++
+                        }
+
+                        // Only add fields bigger than 8 bits to the tracker list
+                        // Also, check if this field is used anywhere, definition-usages get ignored
+                        if(fieldUsages > 0)
+                            fieldLines.add(EcField(currOffset, currData[0], fieldsetScope, bitSize, linePointer))
                     }
-
-                    // Iterate through all lines with their index where this field occurs
-                    var fieldUsages = 0
-                    for(line in fileLines.mapIndexed { index, line -> line to index }.toMap().filter { it.key.contains(currData[0]) }) {
-                        val lineIndex = line.value
-
-                        // Check if it's inside of a string, ignore that
-                        if(isInsideOfString(lineIndex, currData[0]))
-                            continue
-
-                        // Check if this has the possibility to be a field declaration
-                        // Also check if it's inside an OR
-                        if(line.key.replace(" ", "").matches(Regex("[A-Z0-9]{4},[0-9]{1,5},?")) && isFieldDefinition(lineIndex))
-                            continue
-
-                        fieldUsages++
-                    }
-
-                    // Only add fields bigger than 8 bits to the tracker list
-                    // Also, check if this field is used anywhere (>1, first is definition), if not, don't track it
-                    if(fieldUsages >= 1)
-                        fieldLines.add(EcField(currOffset, currData[0], fieldsetScope, bitSize, linePointer))
 
                     // Add multiples of 8 to the byte offset, hold the bits in a separate buffer for later
                     if(bitSize % 8 != 0)
@@ -257,8 +263,9 @@ class DsdtPatcher(
         return sb.toString()
     }
 
-    private fun findTargetMethods(splittedFields: Map<EcField, List<EcField>?>): List<AslMethod> {
+    private fun findTargetMethods(splittedFields: Map<EcField, List<EcField>?>): Pair<List<AslMethod>, Map<EcField, List<EcField>?>> {
         val methodList = mutableListOf<AslMethod>()
+        val affecteds = mutableMapOf<EcField, List<EcField>?>()
 
         splittedFields.keys.forEach { field ->
 
@@ -339,6 +346,9 @@ class DsdtPatcher(
                     methodBody.appendLine(fileLines[linePointer])
                 }
 
+                val targFields = splittedFields.filter { entry -> entry.key == field }.toMutableMap()
+                affecteds.putAll(targFields)
+
                 // Check if there has already been a method encountered with the same start- and endline
                 val existingMethod = methodList.firstOrNull { aslm -> aslm.startLine == methodBegin && aslm.endLine == linePointer }
                 if(existingMethod != null) {
@@ -356,13 +366,13 @@ class DsdtPatcher(
                             methodScope,
                             methodBody.toString().trimEnd(), // Always trim the end of the method body
                             // Only the entry for the current field, filter out all other fields
-                            splittedFields.filter { entry -> entry.key == field }.toMutableMap()
+                            targFields
                     ))
                 }
             }
         }
 
-        return methodList
+        return Pair(methodList, affecteds)
     }
 
     private fun calculateItemScope(targetLine: Int, itemIndent: Int): String {
